@@ -74,11 +74,7 @@ int main() {
     jrmwng::deferred_printf<> dp;
     dp("Hello, ");
     dp("world!");
-    FILE *file = fopen("output.txt", "w");
-    if (file) {
-        dp.apply(&vfprintf, file);
-        fclose(file);
-    }
+    dp.apply(&vfprintf, stderr);
     return 0;
 }
 ```
