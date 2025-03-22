@@ -164,14 +164,16 @@ namespace jrmwng
     class deferred_printf_logger
     {
         using buffer_t = std::conditional_t<zuCAPACITY <= 4000, std::array<char, zuCAPACITY>, std::vector<char>>;
+
+        size_t m_zuLength;
         buffer_t m_buffer;
-        size_t m_zuLength = 0;
     public:
         /**
          * @brief Construct a new deferred printf logger object
          * 
          */
         deferred_printf_logger()
+            : m_zuLength(0)
         {
             if constexpr (zuCAPACITY <= 4000)
             {
