@@ -1,7 +1,8 @@
 #pragma once
 
 /// @file deferred_printf.h
-/// @brief deferred execution of printf-like functions
+/// @brief Deferred execution of printf-like functions.
+/// @details This header provides classes and functions to defer the execution of printf-like functions.
 /// @author jrmwng
 
 #include <functional> // for std::function
@@ -15,6 +16,38 @@
 namespace jrmwng
 {
     /**
+     * @brief Wrapper for vprintf-like functions.
+     * 
+     * @tparam Tvprintf The type of the vprintf-like function.
+     */
+    template <typename Tvprintf>
+    struct vprintf_wrapper
+    {
+        Tvprintf fnVprintf;
+
+        /**
+         * @brief Calls the wrapped vprintf-like function with the provided format string and arguments.
+         * 
+         * @param pcFormat The format string.
+         * @param ... The arguments.
+         * @return int The result of the vprintf-like function.
+         */
+        int operator() (char const *pcFormat, ...) const
+        {
+            va_list pArgs;
+            va_start(pArgs, pcFormat);
+            int const nResult = fnVprintf(pcFormat, pArgs);
+            va_end(pArgs);
+            return nResult;
+        }
+    };
+    template <typename Tvprintf>
+    vprintf_wrapper<Tvprintf> wrap_vprintf(Tvprintf && fnVprintf)
+    {
+        return { std::forward<Tvprintf>(fnVprintf) };
+    }
+
+    /**
      * @brief Abstract base class for deferred log entries.
      */
     struct Ideferred_printf_log
@@ -23,16 +56,6 @@ namespace jrmwng
 
         /**
          * @brief Applies the provided vprintf-like function to the log entry.
-         * 
-         * @param fnVprintf The vprintf-like function.
-         * @param pcFormat The format string.
-         * @param ... The arguments for the format string.
-         * @return int The result of the vprintf-like function.
-         */
-        static int apply_helper(std::function<int(char const *, va_list)> const &fnVprintf, char const *pcFormat, ...);
-
-        /**
-         * @brief Pure virtual function to apply the provided vprintf-like function to the log entry.
          * 
          * @param fnVprintf The vprintf-like function.
          * @return int The result of the vprintf-like function.
@@ -58,7 +81,7 @@ namespace jrmwng
         }
 
         /**
-         * @brief Pure virtual function to get the size of the log entry.
+         * @brief Gets the size of the log entry.
          * 
          * @return size_t The size of the log entry.
          */
@@ -101,7 +124,7 @@ namespace jrmwng
          */
         int apply(std::function<int(char const *, va_list)> const &fnVprintf) const noexcept override
         {
-            return std::apply(&Ideferred_printf_log::apply_helper, std::tuple_cat(std::make_tuple(fnVprintf), m_tupleToken));
+            return std::apply(wrap_vprintf(fnVprintf), m_tupleToken);
         }
 
         /**
@@ -169,8 +192,7 @@ namespace jrmwng
         buffer_t m_buffer;
     public:
         /**
-         * @brief Construct a new deferred printf logger object
-         * 
+         * @brief Constructs a new deferred printf logger object.
          */
         deferred_printf_logger()
             : m_zuLength(0)
@@ -286,6 +308,7 @@ namespace jrmwng
          * @brief Applies the provided callback function to all log entries.
          * 
          * @param fnCallback The callback function.
+         * @return int The sum of the results of the callback function.
          */
         int apply(std::function<int(char const *, va_list)> const & fnCallback) const noexcept
         {
@@ -305,6 +328,14 @@ namespace jrmwng
             return nSum;
         }
 
+        /**
+         * @brief Applies the provided vprintf-like function with additional parameters to all log entries.
+         * 
+         * @tparam Tparams The types of the additional parameters.
+         * @param pfnVprintf The vprintf-like function.
+         * @param tParams The additional parameters.
+         * @return int The sum of the results of the vprintf-like function.
+         */
         template <typename... Tparams>
         int apply(int(*pfnVprintf)(Tparams ..., char const *, va_list), Tparams ... tParams) const
         {

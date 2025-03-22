@@ -2,15 +2,6 @@
 
 namespace jrmwng
 {
-    int Ideferred_printf_log::apply_helper(std::function<int(char const *, va_list)> const &fnVprintf, char const *pcFormat, ...)
-    {
-        va_list vaArgs;
-        va_start(vaArgs, pcFormat);
-        int const nCount = fnVprintf(pcFormat, vaArgs);
-        va_end(vaArgs);
-        return nCount;
-    }
-
     /**
      * @brief Constructs a deferred_printf_log_iterator with the given buffer.
      * 
