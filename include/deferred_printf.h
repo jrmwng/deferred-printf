@@ -9,6 +9,8 @@
 #include <cstdarg> // for va_list, va_start, va_end
 #include <stdexcept> // for std::bad_alloc
 #include <type_traits> // for std::conditional_t
+#include <vector>
+#include <array>
 
 namespace jrmwng
 {
@@ -161,9 +163,25 @@ namespace jrmwng
     template <size_t zuCAPACITY = 4000>
     class deferred_printf_logger
     {
-        char m_acBuffer[zuCAPACITY];
+        using buffer_t = std::conditional_t<zuCAPACITY <= 4000, std::array<char, zuCAPACITY>, std::vector<char>>;
+        buffer_t m_buffer;
         size_t m_zuLength = 0;
     public:
+        /**
+         * @brief Construct a new deferred printf logger object
+         * 
+         */
+        deferred_printf_logger()
+        {
+            if constexpr (zuCAPACITY <= 4000)
+            {
+                //m_buffer.fill(0);
+            }
+            else
+            {
+                m_buffer.resize(zuCAPACITY);
+            }
+        }
         /**
          * @brief Destructor that destroys all log entries.
          */
@@ -188,7 +206,7 @@ namespace jrmwng
 
             if (m_zuLength + sizeof(Tlog) <= zuCAPACITY)
             {
-                new (m_acBuffer + m_zuLength) Tlog(tTokens...);
+                new (m_buffer.data() + m_zuLength) Tlog(tTokens...);
                 m_zuLength += sizeof(Tlog);
             }
             else
@@ -204,7 +222,7 @@ namespace jrmwng
          */
         deferred_printf_log_iterator<char> begin() noexcept
         {
-            return deferred_printf_log_iterator<char>{m_acBuffer};
+            return deferred_printf_log_iterator<char>{m_buffer.data()};
         }
 
         /**
@@ -214,7 +232,7 @@ namespace jrmwng
          */
         deferred_printf_log_iterator<char const> begin() const noexcept
         {
-            return deferred_printf_log_iterator<char const>{m_acBuffer};
+            return deferred_printf_log_iterator<char const>{m_buffer.data()};
         }
 
         /**
@@ -224,7 +242,7 @@ namespace jrmwng
          */
         deferred_printf_log_iterator<char> end() noexcept
         {
-            return deferred_printf_log_iterator<char>{m_acBuffer + m_zuLength};
+            return deferred_printf_log_iterator<char>{m_buffer.data() + m_zuLength};
         }
 
         /**
@@ -234,7 +252,7 @@ namespace jrmwng
          */
         deferred_printf_log_iterator<char const> end() const noexcept
         {
-            return deferred_printf_log_iterator<char const>{m_acBuffer + m_zuLength};
+            return deferred_printf_log_iterator<char const>{m_buffer.data() + m_zuLength};
         }
     };
 

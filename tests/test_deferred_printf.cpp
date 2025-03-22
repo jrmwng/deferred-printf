@@ -141,6 +141,31 @@ void test_multiple_data_types()
     assert(output[3] == "Char: A, String: test");
 }
 
+void test_large_logger()
+{
+    using logger_t = jrmwng::deferred_printf_logger<1024 * 1024>;
+    jrmwng::deferred_printf<logger_t> logger;
+
+    for (int i = 0; i < 1000; ++i)
+    {
+        logger("Log entry %d", i);
+    }
+
+    std::vector<std::string> output;
+    logger.apply([&output](char const *pcFormat, va_list args) -> int {
+        char buffer[256];
+        vsnprintf(buffer, sizeof(buffer), pcFormat, args);
+        output.push_back(buffer);
+        return 0;
+    });
+
+    assert(output.size() == 1000);
+    for (int i = 0; i < 1000; ++i)
+    {
+        assert(output[i] == "Log entry " + std::to_string(i));
+    }
+}
+
 int main()
 {
     test_basic_logging();
@@ -149,6 +174,7 @@ int main()
     test_various_format_specifiers();
     test_multiple_format_specifiers();
     test_multiple_data_types();
+    test_large_logger();
 
     std::cout << "All tests passed!" << std::endl;
     return 0;
