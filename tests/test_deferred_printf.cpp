@@ -52,10 +52,10 @@ void test_custom_vprintf()
 
 void test_logger_capacity()
 {
-    jrmwng::deferred_printf_logger<64> logger;
+    jrmwng::deferred_printf<64> logger;
 
-    logger.log("Entry %d", 1);
-    logger.log("Entry %d", 2);
+    logger("Entry %d", 1);
+    logger("Entry %d", 2);
 
     std::vector<std::string> output;
     auto custom_vprintf = [&output](char const *pcFormat, va_list args) -> int {
@@ -65,10 +65,7 @@ void test_logger_capacity()
         return 0;
     };
 
-    for (auto &log : logger)
-    {
-        log.apply(custom_vprintf);
-    }
+    logger.apply(custom_vprintf);
 
     assert(output.size() == 2);
     assert(output[0] == "Entry 1");
