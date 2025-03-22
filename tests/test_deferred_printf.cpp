@@ -117,6 +117,30 @@ void test_multiple_format_specifiers()
     assert(output[1] == "Float: 3.14, Char: A, String: test");
 }
 
+void test_multiple_data_types()
+{
+    jrmwng::deferred_printf<> logger;
+
+    logger("Int: %d, Long: %ld, Short: %hd", 42, 123456789L, (short)123);
+    logger("Unsigned: %u, Unsigned Long: %lu, Unsigned Short: %hu", 42U, 123456789UL, (unsigned short)123);
+    logger("Float: %.2f, Double: %.4lf, Long Double: %.6Lf", 3.14159f, 2.7182818284, 1.618033988749895L);
+    logger("Char: %c, String: %s", 'A', "test");
+
+    std::vector<std::string> output;
+    logger.apply([&output](char const *pcFormat, va_list args) -> int {
+        char buffer[256];
+        vsnprintf(buffer, sizeof(buffer), pcFormat, args);
+        output.push_back(buffer);
+        return 0;
+    });
+
+    assert(output.size() == 4);
+    assert(output[0] == "Int: 42, Long: 123456789, Short: 123");
+    assert(output[1] == "Unsigned: 42, Unsigned Long: 123456789, Unsigned Short: 123");
+    assert(output[2] == "Float: 3.14, Double: 2.7183, Long Double: 1.618034");
+    assert(output[3] == "Char: A, String: test");
+}
+
 int main()
 {
     test_basic_logging();
@@ -124,6 +148,7 @@ int main()
     test_logger_capacity();
     test_various_format_specifiers();
     test_multiple_format_specifiers();
+    test_multiple_data_types();
 
     std::cout << "All tests passed!" << std::endl;
     return 0;
