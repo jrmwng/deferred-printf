@@ -99,6 +99,23 @@ int main() {
 }
 ```
 
+Example with custom buffer size (e.g., 1MB):
+```cpp
+#include "deferred_printf.h"
+#include <cstdio>
+#include <memory>
+
+int main() {
+    jrmwng::deferred_printf<1024 * 1024> dp;
+    dp("Hello, ");
+    dp("world!");
+
+    // Apply the deferred printf with a custom buffer size
+    dp.apply(&vprintf);
+    return 0;
+}
+```
+
 Test case to obtain the required buffer size, allocate a buffer with the size, and then fill the buffer from the logger:
 ```cpp
 #include "deferred_printf.h"

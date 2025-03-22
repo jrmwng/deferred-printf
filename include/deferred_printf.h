@@ -285,10 +285,10 @@ namespace jrmwng
      * 
      * @tparam Tlogger The type of the logger.
      */
-    template <typename Tlogger = deferred_printf_logger<>>
+    template <size_t zuCAPACITY = 4000>
     class deferred_printf
     {
-        Tlogger m_Logger;
+        deferred_printf_logger<zuCAPACITY> m_Logger;
     public:
 
         /**

@@ -149,8 +149,7 @@ void test_multiple_data_types()
 
 void test_large_logger()
 {
-    using logger_t = jrmwng::deferred_printf_logger<1024 * 1024>;
-    jrmwng::deferred_printf<logger_t> logger;
+    jrmwng::deferred_printf<1024 * 1024> logger;
 
     for (int i = 0; i < 1000; ++i)
     {
