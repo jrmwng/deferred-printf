@@ -3,6 +3,12 @@
 #include <vector>
 #include <string>
 #include <cassert>
+#include <cstdio>
+#include <fstream>
+
+#ifdef _MSC_VER
+#pragma warning(disable : 4996) // Suppress warning: 'fopen' is deprecated
+#endif
 
 void test_basic_logging()
 {
@@ -166,6 +172,35 @@ void test_large_logger()
     }
 }
 
+void test_fprintf()
+{
+    jrmwng::deferred_printf<> logger;
+
+    logger("File %s, Line %d\n", "test.cpp", 42);
+    logger("Error: %s\n", "Something went wrong");
+
+    std::vector<std::string> output;
+    FILE *file = fopen("tempfile.txt", "w+");
+    if (!file) {
+        std::cerr << "Failed to open temporary file" << std::endl;
+        return;
+    }
+    logger.apply(vfprintf, file);
+
+    fseek(file, 0, SEEK_SET);
+    char buffer[256];
+    while (fgets(buffer, sizeof(buffer), file))
+    {
+        output.push_back(buffer);
+    }
+    fclose(file);
+    remove("tempfile.txt");
+
+    assert(output.size() == 2);
+    assert(output[0] == std::string("File test.cpp, Line 42\n"));
+    assert(output[1] == std::string("Error: Something went wrong\n"));
+}
+
 int main()
 {
     test_basic_logging();
@@ -175,6 +210,7 @@ int main()
     test_multiple_format_specifiers();
     test_multiple_data_types();
     test_large_logger();
+    test_fprintf();
 
     std::cout << "All tests passed!" << std::endl;
     return 0;

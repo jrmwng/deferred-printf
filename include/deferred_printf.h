@@ -298,5 +298,15 @@ namespace jrmwng
                 }
             }
         }
+
+        template <typename... Tparams>
+        void apply(int(*pfnVprintf)(Tparams ..., char const *, va_list), Tparams ... tParams) const
+        {
+            std::function<int(char const *, va_list)> const fnVprintf = [pfnVprintf, tParams...](char const *pcFormat, va_list vaArgs)
+            {
+                return pfnVprintf(tParams..., pcFormat, vaArgs);
+            };
+            this->apply(fnVprintf);
+        }
     };
 }
