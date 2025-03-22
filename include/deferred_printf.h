@@ -287,8 +287,9 @@ namespace jrmwng
          * 
          * @param fnCallback The callback function.
          */
-        void apply(std::function<int(char const *, va_list)> const & fnCallback) const noexcept
+        int apply(std::function<int(char const *, va_list)> const & fnCallback) const noexcept
         {
+            int nSum = 0;
             for (Ideferred_printf_log const & iLog : m_Logger)
             {
                 int const nCount = iLog.apply(fnCallback);
@@ -296,17 +297,22 @@ namespace jrmwng
                 {
                     // TODO
                 }
+                else
+                {
+                    nSum += nCount;
+                }
             }
+            return nSum;
         }
 
         template <typename... Tparams>
-        void apply(int(*pfnVprintf)(Tparams ..., char const *, va_list), Tparams ... tParams) const
+        int apply(int(*pfnVprintf)(Tparams ..., char const *, va_list), Tparams ... tParams) const
         {
             std::function<int(char const *, va_list)> const fnVprintf = [pfnVprintf, tParams...](char const *pcFormat, va_list vaArgs)
             {
                 return pfnVprintf(tParams..., pcFormat, vaArgs);
             };
-            this->apply(fnVprintf);
+            return this->apply(fnVprintf);
         }
     };
 }

@@ -52,7 +52,7 @@ deferred-printf
 ## Usage
 After building the project, you can use the deferred printf functionality by including the `deferred_printf.h` header in your source files and using the provided functions.
 
-Example:
+Example with `vprintf`:
 ```cpp
 #include "deferred_printf.h"
 
@@ -63,6 +63,74 @@ int main() {
     dp.apply(&vprintf);
     return 0;
 }
+```
+
+Example with `vfprintf`:
+```cpp
+#include "deferred_printf.h"
+#include <cstdio>
+
+int main() {
+    jrmwng::deferred_printf<> dp;
+    dp("Hello, ");
+    dp("world!");
+    FILE *file = fopen("output.txt", "w");
+    if (file) {
+        dp.apply(&vfprintf, file);
+        fclose(file);
+    }
+    return 0;
+}
+```
+
+Example with `vsprintf`:
+```cpp
+#include "deferred_printf.h"
+#include <cstdio>
+
+int main() {
+    jrmwng::deferred_printf<> dp;
+    dp("Hello, ");
+    dp("world!");
+    char buffer[100];
+    dp.apply(&vsprintf, buffer);
+    printf("%s\n", buffer);
+    return 0;
+}
+```
+
+Test case to obtain the required buffer size, allocate a buffer with the size, and then fill the buffer from the logger:
+```cpp
+#include "deferred_printf.h"
+#include <cstdio>
+#include <cstdarg>
+#include <vector>
+
+int main() {
+    jrmwng::deferred_printf<> dp;
+    dp("Hello, ");
+    dp("world!");
+
+    // Obtain the required buffer size
+    int size = dp.apply<char*, size_t>(&vsnprintf, nullptr, 0);
+
+    // Allocate a buffer with the required size
+    std::vector<char> buffer(size + 1);
+
+    // Fill the buffer from the logger
+    dp.apply(&vsprintf, buffer.data());
+
+    printf("%s\n", buffer.data());
+    return 0;
+}
+```
+
+## Running Tests
+To run the tests, use CTest after building the project:
+
+```sh
+cd build
+ctest
 ```
 
 ## Contributing

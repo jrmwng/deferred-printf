@@ -201,6 +201,24 @@ void test_fprintf()
     assert(output[1] == std::string("Error: Something went wrong\n"));
 }
 
+void test_dynamic_buffer_allocation()
+{
+    jrmwng::deferred_printf<> logger;
+
+    logger("Dynamic buffer %d %d", 5, 6);
+
+    // Obtain the required buffer size
+    int size = logger.apply<char*, size_t>(&vsnprintf, nullptr, 0);
+
+    // Allocate a buffer with the required size
+    std::vector<char> buffer(size + 1);
+
+    // Fill the buffer from the logger
+    logger.apply(&vsprintf, buffer.data());
+
+    assert(std::string(buffer.data()) == "Dynamic buffer 5 6");
+}
+
 int main()
 {
     test_basic_logging();
@@ -211,6 +229,7 @@ int main()
     test_multiple_data_types();
     test_large_logger();
     test_fprintf();
+    test_dynamic_buffer_allocation();
 
     std::cout << "All tests passed!" << std::endl;
     return 0;
