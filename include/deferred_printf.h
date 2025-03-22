@@ -34,15 +34,16 @@ namespace jrmwng
              * @param ... The arguments.
              * @return int The result of the vprintf-like function.
              */
-            int operator() (char const *pcFormat, ...) const
-            {
-                va_list pArgs;
-                va_start(pArgs, pcFormat);
-                int const nResult = fnVprintf(pcFormat, pArgs);
-                va_end(pArgs);
-                return nResult;
-            }
+            int operator() (char const *pcFormat, ...) const;
         };
+
+        /**
+         * @brief Wraps a vprintf-like function in a vprintf_wrapper.
+         * 
+         * @tparam Tvprintf The type of the vprintf-like function.
+         * @param fnVprintf The vprintf-like function.
+         * @return vprintf_wrapper<Tvprintf> The wrapped vprintf-like function.
+         */
         template <typename Tvprintf>
         vprintf_wrapper<Tvprintf> wrap_vprintf(Tvprintf && fnVprintf)
         {
@@ -63,24 +64,6 @@ namespace jrmwng
              * @return int The result of the vprintf-like function.
              */
             virtual int apply(std::function<int(char const *, va_list)> const &fnVprintf) const = 0;
-
-            /**
-             * @brief Applies the provided vprintf-like function with additional parameters to the log entry.
-             * 
-             * @tparam Tparams The types of the additional parameters.
-             * @param pfnVprintf The vprintf-like function.
-             * @param tParams The additional parameters.
-             * @return int The result of the vprintf-like function.
-             */
-            template <typename... Tparams>
-            int apply(int(*pfnVprintf)(Tparams ..., char const *, va_list), Tparams ... tParams) const
-            {
-                std::function<int(char const *, va_list)> const fnVprintf = [pfnVprintf, tParams...](char const *pcFormat, va_list vaArgs)
-                {
-                    return pfnVprintf(tParams..., pcFormat, vaArgs);
-                };
-                return this->apply(fnVprintf);
-            }
 
             /**
              * @brief Gets the size of the log entry.
@@ -142,6 +125,8 @@ namespace jrmwng
 
         /**
          * @brief Iterator class for iterating over deferred log entries.
+         * 
+         * @tparam Tchar The character type of the buffer.
          */
         template <typename Tchar>
         class deferred_printf_log_iterator
@@ -151,7 +136,7 @@ namespace jrmwng
             using reference = std::conditional_t<std::is_const_v<Tchar>, Ideferred_printf_log const &, Ideferred_printf_log &>;
 
             /**
-             * @brief Constructor that initializes the iterator with the provided buffer and buffer end.
+             * @brief Constructor that initializes the iterator with the provided buffer.
              * 
              * @param pcBuffer The buffer.
              */
@@ -286,7 +271,7 @@ namespace jrmwng
     /**
      * @brief Template class for deferred printf functionality.
      * 
-     * @tparam Tlogger The type of the logger.
+     * @tparam zuCAPACITY The capacity of the logger.
      */
     template <size_t zuCAPACITY = 4000>
     class deferred_printf

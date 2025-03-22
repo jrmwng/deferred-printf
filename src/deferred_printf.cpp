@@ -5,6 +5,25 @@ namespace jrmwng
     namespace details
     {
         /**
+         * @brief Calls the wrapped vprintf-like function with the provided format string and arguments.
+         * 
+         * @param pcFormat The format string.
+         * @param ... The arguments.
+         * @return int The result of the vprintf-like function.
+         */
+        template <typename Tvprintf>
+        int vprintf_wrapper<Tvprintf>::operator() (char const *pcFormat, ...) const
+        {
+            va_list pArgs;
+            va_start(pArgs, pcFormat);
+            int const nResult = fnVprintf(pcFormat, pArgs);
+            va_end(pArgs);
+            return nResult;
+        }
+
+        template struct vprintf_wrapper<std::function<int(char const *, va_list)> const &>;
+
+        /**
          * @brief Constructs a deferred_printf_log_iterator with the given buffer.
          * 
          * @param pcBuffer Pointer to the buffer.
