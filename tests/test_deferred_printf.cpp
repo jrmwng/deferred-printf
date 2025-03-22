@@ -69,11 +69,40 @@ void test_logger_capacity()
     assert(output[1] == "Entry 2");
 }
 
+void test_various_format_specifiers()
+{
+    jrmwng::deferred_printf<> logger;
+
+    logger("Integer: %d", 42);
+    logger("Hex: %x", 255);
+    logger("Octal: %o", 64);
+    logger("Float: %.2f", 3.14159);
+    logger("Char: %c", 'A');
+    logger("String: %s", "test");
+
+    std::vector<std::string> output;
+    logger.apply([&output](char const *pcFormat, va_list args) -> int {
+        char buffer[256];
+        vsnprintf(buffer, sizeof(buffer), pcFormat, args);
+        output.push_back(buffer);
+        return 0;
+    });
+
+    assert(output.size() == 6);
+    assert(output[0] == "Integer: 42");
+    assert(output[1] == "Hex: ff");
+    assert(output[2] == "Octal: 100");
+    assert(output[3] == "Float: 3.14");
+    assert(output[4] == "Char: A");
+    assert(output[5] == "String: test");
+}
+
 int main()
 {
     test_basic_logging();
     test_custom_vprintf();
     test_logger_capacity();
+    test_various_format_specifiers();
 
     std::cout << "All tests passed!" << std::endl;
     return 0;
