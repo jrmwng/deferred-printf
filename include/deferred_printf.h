@@ -194,10 +194,13 @@ namespace jrmwng
                 }
             }
 
+            /**
+             * @brief Controls whether to skip destruction of log entries.
+             */
             constexpr static bool bSKIP_DESTRUCTION = true;
 
             /**
-             * @brief Destructor that destroys all log entries.
+             * @brief Destructor that destroys all log entries if destruction is not skipped.
              */
             ~deferred_printf_logger() noexcept
             {
