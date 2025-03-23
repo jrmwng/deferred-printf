@@ -193,17 +193,23 @@ namespace jrmwng
                     m_buffer.resize(zuCAPACITY);
                 }
             }
+
+            constexpr static bool bSKIP_DESTRUCTION = true;
+
             /**
              * @brief Destructor that destroys all log entries.
              */
             ~deferred_printf_logger() noexcept
             {
-                for (Ideferred_printf_log & iLog : *this)
+                if constexpr (!bSKIP_DESTRUCTION)
                 {
-                    iLog.~Ideferred_printf_log();
+                    for (Ideferred_printf_log & iLog : *this)
+                    {
+                        iLog.~Ideferred_printf_log();
+                    }
                 }
             }
-            
+
             /**
              * @brief Logs a new entry with the provided tokens.
              * 
@@ -214,6 +220,7 @@ namespace jrmwng
             void log(Ttokens ... tTokens)
             {
                 using Tlog = Cdeferred_printf_log<Ttokens...>;
+                static_assert((!bSKIP_DESTRUCTION) || (std::is_trivially_destructible_v<std::tuple<Ttokens...>>), "Ttokens must be trivially destructible");
 
                 if (m_zuLength + sizeof(Tlog) <= zuCAPACITY)
                 {
