@@ -81,8 +81,6 @@ namespace jrmwng
         template <typename... Ttokens>
         class Cdeferred_printf_log : public Ideferred_printf_log
         {
-            static_assert(static_cast<Ideferred_printf_log*>(static_cast<Cdeferred_printf_log<Ttokens...>*>(nullptr)) == nullptr, "Cdeferred_printf_log<Ttokens...> must be derived from Ideferred_printf_log");
-
             std::tuple<Ttokens...> m_tupleToken;
         public:
             /**
@@ -223,6 +221,7 @@ namespace jrmwng
             void log(Ttokens ... tTokens)
             {
                 using Tlog = Cdeferred_printf_log<Ttokens...>;
+                static_assert(static_cast<Ideferred_printf_log *>(static_cast<Tlog *>(nullptr)) == nullptr, "We shall reinterpret_cast `Tlog` to `Ideferred_printf_log`, therefore it is to make sure that they have no offset difference");
                 static_assert((!bSKIP_DESTRUCTION) || (std::is_trivially_destructible_v<std::tuple<Ttokens...>>), "Ttokens must be trivially destructible");
 
                 if (m_zuLength + sizeof(Tlog) <= zuCAPACITY)
