@@ -181,7 +181,7 @@ void test_fprintf()
         std::cerr << "Failed to open temporary file" << std::endl;
         return;
     }
-    logger.apply<FILE*>(&vfprintf, file);
+    logger.apply(&vfprintf, file);
 
     fseek(file, 0, SEEK_SET);
     char buffer[256];
@@ -210,7 +210,7 @@ void test_dynamic_buffer_allocation()
     std::vector<char> buffer(size + 1);
 
     // Fill the buffer from the logger
-    logger.apply<char *>(&vsprintf, buffer.data());
+    logger.apply(&vsprintf, buffer.data());
 
     assert(std::string(buffer.data()) == "Dynamic buffer 5 6");
 }
