@@ -334,11 +334,11 @@ namespace jrmwng
          * @return int The sum of the results of the vprintf-like function.
          */
         template <typename... Tparams>
-        int apply(int(*pfnVprintf)(Tparams ..., char const *, va_list), Tparams ... tParams) const
+        int apply(int(*pfnVprintf)(std::decay_t<Tparams> ..., char const *, va_list), Tparams && ... tParams) const
         {
-            std::function<int(char const *, va_list)> const fnVprintf = [pfnVprintf, tParams...](char const *pcFormat, va_list vaArgs)
+            std::function<int(char const *, va_list)> const fnVprintf = [&, pfnVprintf](char const *pcFormat, va_list vaArgs)
             {
-                return pfnVprintf(tParams..., pcFormat, vaArgs);
+                return pfnVprintf(std::forward<Tparams>(tParams)..., pcFormat, vaArgs);
             };
             return this->apply(fnVprintf);
         }
