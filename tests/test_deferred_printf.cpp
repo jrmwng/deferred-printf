@@ -181,7 +181,7 @@ void test_fprintf()
         std::cerr << "Failed to open temporary file" << std::endl;
         return;
     }
-    logger.apply<FILE*>(vfprintf, file);
+    logger.apply<FILE*>(&vfprintf, file);
 
     fseek(file, 0, SEEK_SET);
     char buffer[256];
